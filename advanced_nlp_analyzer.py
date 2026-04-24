@@ -36,9 +36,12 @@ class AdvancedNLPEssayAnalyzer:
         
         # Initialize spaCy for advanced NLP
         try:
-            self.nlp = spacy.load("en_core_web_sm")
-        except OSError:
-            print("Warning: spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+            if spacy is not None:
+                self.nlp = spacy.load("en_core_web_sm")
+            else:
+                self.nlp = None
+        except Exception:
+            print("Warning: spaCy model not found or spacy not installed.")
             self.nlp = None
         
         # Initialize TF-IDF vectorizer for semantic analysis
