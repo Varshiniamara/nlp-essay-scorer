@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}History - Automated Essay Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-clock-history me-2"></i>
+                Your Essay History
+            </h2>
+            <p class="text-muted">Track your progress and review past submissions</p>
+        </div>
+
+        {% if essays %}
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-primary">{{ essays|length }}</h5>
+                            <p class="small text-muted mb-0">Total Essays</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-success">{{ "%.1f"|format((essays|map(attribute='results')|map('first')|map(attribute='score')|sum) / essays|length) }}</h5>
+                            <p class="small text-muted mb-0">Average Score</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-info">{{ (essays|map(attribute='results')|map('first')|map(attribute='score')|max)|round(1) }}</h5>
+                            <p class="small text-muted mb-0">Highest Score</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-warning">{{ (essays|map(attribute='results')|map('first')|map(attribute='score')|min)|round(1) }}</h5>
+                            <p class="small text-muted mb-0">Lowest Score</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Essays Table -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-gradient text-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="mb-0">
+                                <i class="bi bi-list-ul me-2"></i>
+                                Essay Submissions
+                            </h4>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-light text-dark">{{ essays|length }} essays</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Essay Preview</th>
+                                    <th>Score</th>
+                                    <th>Word Count</th>
+                                    <th>Grammar Errors</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for essay in essays %}
+                                    {% set result = essay.results|first %}
+                                    <tr>
+                                        <td>
+                                            <small>{{ essay.submission_date.strftime('%b %d, %Y') }}</small>
+                                            <br>
+                                            <small class="text-muted">{{ essay.submission_date.strftime('%I:%M %p') }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="essay-preview">
+                                                {% set preview = essay.essay_text[:150] + '...' if essay.essay_text|length > 150 else essay.essay_text %}
+                                                <small>{{ preview }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="score-display">
+                                                <span class="badge {% if result.score >= 10 %}bg-success{% elif result.score >= 8 %}bg-primary{% elif result.score >= 6 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                                    {{ "%.1f"|format(result.score) }}/12
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-info">{{ result.word_count }}</small>
+                                        </td>
+                                        <td>
+                                            <small class="text-warning">{{ result.grammar_errors }}</small>
+                                        </td>
+                                        <td>
+                                            {% if result.score >= 10 %}
+                                                <span class="badge bg-success">Excellent</span>
+                                            {% elif result.score >= 8 %}
+                                                <span class="badge bg-primary">Very Good</span>
+                                            {% elif result.score >= 6 %}
+                                                <span class="badge bg-warning">Good</span>
+                                            {% elif result.score >= 4 %}
+                                                <span class="badge bg-info">Acceptable</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Needs Work</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('result', essay_id=essay.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                <form action="{{ url_for('delete_essay', essay_id=essay.id) }}" method="POST" 
+                                                      onsubmit="return confirm('Are you sure you want to delete this essay?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Chart -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Score Progress Over Time
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressChart" width="400" height="150"></canvas>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- Empty State -->
+            <div class="card shadow-lg">
+                <div class="card-body text-center py-5">
+                    <div class="text-muted mb-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Essays Yet</h4>
+                    <p class="text-muted mb-4">
+                        You haven't submitted any essays yet. Start by submitting your first essay to see your scoring history here.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Submit Your First Essay
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        {% if essays %}
+            <div class="row mt-4">
+                <div class="col-md-6 mb-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Submit New Essay
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-success btn-lg w-100">
+                        <i class="bi bi-graph-up me-2"></i>
+                        View Dashboard
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if essays %}
+<script>
+// Progress Chart
+const ctx = document.getElementById('progressChart').getContext('2d');
+const scores = [
+    {% for essay in essays %}
+        {% set result = essay.results|first %}
+        {{ result.score }},
+    {% endfor %}
+];
+const dates = [
+    {% for essay in essays %}
+        '{{ essay.submission_date.strftime('%m/%d') }}',
+    {% endfor %}
+];
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            label: 'Essay Scores',
+            data: scores,
+            borderColor: 'rgb(102, 126, 234)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.1,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 12,
+                title: {
+                    display: true,
+                    text: 'Score'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+
+<style>
+.essay-preview {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-group .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+@media print {
+    .btn-group {
+        display: none;
+    }
+    
+    .navbar, footer {
+        display: none;
+    }
+}
+</style>
+{% endblock %}

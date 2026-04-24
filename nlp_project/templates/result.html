@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Essay Result - Automated Essay Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Result Header -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-clipboard-check me-2"></i>
+                AI Essay Scoring Results
+            </h2>
+            <p class="text-muted">Submitted on {{ essay.submission_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        </div>
+
+        <!-- Score Card -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-star me-2"></i>
+                    Your Score
+                </h4>
+            </div>
+            <div class="card-body text-center p-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="score-display">
+                            <h1 class="display-1 fw-bold {% if result.score >= 10 %}text-success{% elif result.score >= 8 %}text-primary{% elif result.score >= 6 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ "%.1f"|format(result.score) }}/12
+                            </h1>
+                            <div class="mb-3">
+                                {% if result.score >= 10 %}
+                                    <span class="badge bg-success fs-6">Excellent</span>
+                                {% elif result.score >= 8 %}
+                                    <span class="badge bg-primary fs-6">Very Good</span>
+                                {% elif result.score >= 6 %}
+                                    <span class="badge bg-warning fs-6">Good</span>
+                                {% elif result.score >= 4 %}
+                                    <span class="badge bg-info fs-6">Acceptable</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">Needs Improvement</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="score-progress">
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar {% if result.score >= 10 %}bg-success{% elif result.score >= 8 %}bg-primary{% elif result.score >= 6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ (result.score / 12) * 100 }}%">
+                                    {{ "%.1f"|format(result.score) }}/12
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted">Score Range: 1 (Poor) to 12 (Excellent)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Metrics -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Detailed Metrics
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if feedback.detailed_metrics %}
+                <div class="row text-center">
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-primary">{{ feedback.detailed_metrics.word_count }}</h5>
+                            <small class="text-muted">Word Count</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-success">{{ feedback.detailed_metrics.vocab_richness }}</h5>
+                            <small class="text-muted">Vocabulary Richness</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-info">{{ feedback.detailed_metrics.readability_score }}</h5>
+                            <small class="text-muted">Readability Score</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-warning">{{ feedback.detailed_metrics.grammar_errors }}</h5>
+                            <small class="text-muted">Grammar Errors</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-secondary">{{ "%.1f"|format(feedback.detailed_metrics.avg_word_length) }}</h5>
+                            <small class="text-muted">Avg Word Length</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-dark">{{ feedback.detailed_metrics.complex_words }}</h5>
+                            <small class="text-muted">Complex Words</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Feedback Analysis -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-chat-square-text me-2"></i>
+                    AI Feedback Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if feedback.overall_assessment %}
+                <div class="mb-4">
+                    <h6 class="text-primary mb-3">Overall Assessment</h6>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        {{ feedback.overall_assessment }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success mb-3">Strengths</h6>
+                        {% if feedback.strengths %}
+                        <ul class="list-group list-group-flush">
+                            {% for strength in feedback.strengths %}
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                {{ strength }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No specific strengths identified.</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger mb-3">Areas for Improvement</h6>
+                        {% if feedback.weaknesses %}
+                        <ul class="list-group list-group-flush">
+                            {% for weakness in feedback.weaknesses %}
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                {{ weakness }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-muted">No significant weaknesses identified.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if feedback.suggestions %}
+                <div class="mt-4">
+                    <h6 class="text-primary mb-3">Suggestions for Improvement</h6>
+                    <div class="alert alert-light">
+                        <ul class="mb-0">
+                            {% for suggestion in feedback.suggestions %}
+                            <li>{{ suggestion }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Essay Preview -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Your Essay
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="essay-content">
+                    <div class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ essay.essay_text }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Submit Another Essay
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-success btn-lg w-100">
+                    <i class="bi bi-graph-up me-2"></i>
+                    View Dashboard
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('history') }}" class="btn btn-outline-primary btn-lg w-100">
+                    <i class="bi bi-clock-history me-2"></i>
+                    View History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.metric-box {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.metric-box:hover {
+    transform: translateY(-2px);
+}
+
+.metric-box h5 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.score-display h1 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress {
+    background-color: #e9ecef;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.essay-content pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.list-group-item {
+    border: none;
+    padding: 0.5rem 0;
+}
+
+@media print {
+    .btn-group {
+        display: none;
+    }
+    
+    .navbar, footer {
+        display: none;
+    }
+}
+</style>
+{% endblock %}

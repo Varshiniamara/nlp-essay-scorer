@@ -1,0 +1,648 @@
+{% extends "base.html" %}
+
+{% block title %}ML-Based Essay Analysis - Automated Essay Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-11 mx-auto">
+        <!-- Result Header -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-cpu me-2"></i>
+                ML-Based NLP Essay Analysis
+            </h2>
+            <p class="text-muted">Supervised Machine Learning with Comprehensive NLP Components</p>
+        </div>
+
+        <!-- Score Card with Confidence -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-star me-2"></i>
+                    Predicted Score: {{ "%.1f"|format(result.score) }}/12
+                    <span class="badge bg-info ms-2">Confidence: {{ "%.1f"|format(feedback.get('predicted_score', 0) * 100) }}%</span>
+                </h4>
+            </div>
+            <div class="card-body text-center p-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="score-display">
+                            <h1 class="display-1 fw-bold {% if result.score >= 10 %}text-success{% elif result.score >= 8 %}text-primary{% elif result.score >= 6 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ "%.1f"|format(result.score) }}/12
+                            </h1>
+                            <div class="mb-3">
+                                {% if result.score >= 10 %}
+                                    <span class="badge bg-success fs-6">Excellent</span>
+                                {% elif result.score >= 8 %}
+                                    <span class="badge bg-primary fs-6">Very Good</span>
+                                {% elif result.score >= 6 %}
+                                    <span class="badge bg-warning fs-6">Good</span>
+                                {% elif result.score >= 4 %}
+                                    <span class="badge bg-info fs-6">Acceptable</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">Needs Improvement</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="confidence-meter">
+                            <h6 class="text-primary mb-3">ML Model Confidence</h6>
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar {% if feedback.get('confidence_score', 0) >= 0.8 %}bg-success{% elif feedback.get('confidence_score', 0) >= 0.6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ feedback.get('confidence_score', 0) * 100 }}%">
+                                    {{ "%.1f"|format(feedback.get('confidence_score', 0) * 100) }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">Higher confidence indicates more reliable prediction</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NLP Components Analysis -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    NLP Components Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Tokenization -->
+                    <div class="col-md-6 mb-3">
+                        <div class="nlp-component-card">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-scissors me-2"></i>
+                                Tokenization
+                            </h6>
+                            <div class="component-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Word Tokens:</span>
+                                    <span class="metric-value">{{ feedback.get('features', {}).get('tokenization', {}).get('token_count', 0) }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Sentence Tokens:</span>
+                                    <span class="metric-value">{{ feedback.get('features', {}).get('tokenization', {}).get('sentence_count', 0) }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Avg Tokens/Sentence:</span>
+                                    <span class="metric-value">{{ "%.1f"|format(feedback.get('features', {}).get('tokenization', {}).get('avg_tokens_per_sentence', 0)) }}</span>
+                                </div>
+                            </div>
+                            <div class="key-terms mt-3">
+                                <small class="text-muted">Key Terms:</small>
+                                <div class="terms-badges">
+                                    {% for term in feedback.get('recommendations', {}).get('key_terminology', {}).get('tokenization', []) %}
+                                        <span class="badge bg-light text-dark">{{ term }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lexical Analysis -->
+                    <div class="col-md-6 mb-3">
+                        <div class="nlp-component-card">
+                            <h6 class="text-success mb-3">
+                                <i class="bi bi-book me-2"></i>
+                                Lexical Analysis
+                            </h6>
+                            <div class="component-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Lexical Diversity:</span>
+                                    <span class="metric-value">{{ "%.3f"|format(feedback.get('features', {}).get('lexical_analysis', {}).get('lexical_diversity', 0)) }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Unique Words:</span>
+                                    <span class="metric-value">{{ feedback.get('features', {}).get('lexical_analysis', {}).get('unique_words', 0) }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Vocabulary Sophistication:</span>
+                                    <span class="metric-value">{{ "%.3f"|format(feedback.get('features', {}).get('lexical_analysis', {}).get('vocabulary_sophistication', 0)) }}</span>
+                                </div>
+                            </div>
+                            <div class="key-terms mt-3">
+                                <small class="text-muted">Key Terms:</small>
+                                <div class="terms-badges">
+                                    {% for term in feedback.get('recommendations', {}).get('key_terminology', {}).get('lexical_analysis', []) %}
+                                        <span class="badge bg-light text-dark">{{ term }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Text Preprocessing -->
+                    <div class="col-md-6 mb-3">
+                        <div class="nlp-component-card">
+                            <h6 class="text-info mb-3">
+                                <i class="bi bi-gear me-2"></i>
+                                Text Preprocessing
+                            </h6>
+                            <div class="component-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Original Length:</span>
+                                    <span class="metric-value">{{ feedback.get('features', {}).get('preprocessing', {}).get('original_length', 0) }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Processed Length:</span>
+                                    <span class="metric-value">{{ feedback.get('features', {}).get('preprocessing', {}).get('processed_length', 0) }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Compression Ratio:</span>
+                                    <span class="metric-value">{{ "%.3f"|format(feedback.get('features', {}).get('preprocessing', {}).get('compression_ratio', 0)) }}</span>
+                                </div>
+                            </div>
+                            <div class="key-terms mt-3">
+                                <small class="text-muted">Key Terms:</small>
+                                <div class="terms-badges">
+                                    {% for term in feedback.get('recommendations', {}).get('key_terminology', {}).get('text_preprocessing', []) %}
+                                        <span class="badge bg-light text-dark">{{ term }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vector Space Modeling -->
+                    <div class="col-md-6 mb-3">
+                        <div class="nlp-component-card">
+                            <h6 class="text-warning mb-3">
+                                <i class="bi bi-layers me-2"></i>
+                                Vector Space Modeling
+                            </h6>
+                            <div class="component-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Vocabulary Size:</span>
+                                    <span class="metric-value">{{ feedback.features.vector_space.vocabulary_size }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Semantic Similarity:</span>
+                                    <span class="metric-value">{{ "%.3f"|format(feedback.features.vector_space.avg_semantic_similarity) }}</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Top Terms:</span>
+                                    <span class="metric-value">{{ feedback.features.vector_space.top_terms|length }}</span>
+                                </div>
+                            </div>
+                            <div class="key-terms mt-3">
+                                <small class="text-muted">Key Terms:</small>
+                                <div class="terms-badges">
+                                    {% for term in feedback.recommendations.key_terminology.vector_space_modeling %}
+                                        <span class="badge bg-light text-dark">{{ term }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Importance Graph -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    ML Feature Importance Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <canvas id="featureImportanceChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-explanation">
+                            <h6 class="text-primary mb-3">Feature Contributions</h6>
+                            {% for feature, importance in feedback.ml_analysis.feature_importance.items() %}
+                                <div class="feature-item">
+                                    <span class="feature-name">{{ feature.replace('_', ' ').title() }}</span>
+                                    <div class="progress" style="height: 15px;">
+                                        <div class="progress-bar bg-primary" style="width: {{ importance * 100 }}%">
+                                            {{ "%.0f"|format(importance * 100) }}%
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Readability Metrics Graph -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Readability Metrics Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <canvas id="readabilityChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="readability-scores">
+                            <h6 class="text-success mb-3">Readability Scores</h6>
+                            <div class="score-item">
+                                <span class="score-label">Flesch Reading Ease:</span>
+                                <span class="score-value">{{ "%.1f"|format(feedback.features.readability.flesch_reading_ease) }}</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Flesch-Kincaid Grade:</span>
+                                <span class="score-value">{{ "%.1f"|format(feedback.features.readability.flesch_kincaid_grade) }}</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Gunning Fog Index:</span>
+                                <span class="score-value">{{ "%.1f"|format(feedback.features.readability.gunning_fog) }}</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Coleman-Liau Index:</span>
+                                <span class="score-value">{{ "%.1f"|format(feedback.features.readability.coleman_liau) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    AI-Powered Recommendations
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="recommendation-card">
+                            <h6 class="text-success mb-3">Strengths</h6>
+                            <ul class="recommendation-list">
+                                {% for strength in feedback.recommendations.strengths %}
+                                    <li class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        <span>{{ strength }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="recommendation-card">
+                            <h6 class="text-warning mb-3">Areas for Improvement</h6>
+                            <ul class="recommendation-list">
+                                {% for weakness in feedback.recommendations.weaknesses %}
+                                    <li class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                        <span>{{ weakness }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="recommendation-card">
+                            <h6 class="text-info mb-3">Improvement Suggestions</h6>
+                            <ul class="recommendation-list">
+                                {% for suggestion in feedback.recommendations.improvement_suggestions %}
+                                    <li class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-arrow-up-circle text-info me-2"></i>
+                                        <span>{{ suggestion }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NLP Insights -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="insights-card">
+                            <h6 class="text-primary mb-3">NLP Technical Insights</h6>
+                            <div class="insights-grid">
+                                {% for insight_type, insight_value in feedback.recommendations.nlp_insights.items() %}
+                                    <div class="insight-item">
+                                        <strong>{{ insight_type.replace('_', ' ').title() }}:</strong>
+                                        <span class="insight-value">{{ insight_value }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Essay Text -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Your Essay Text
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="essay-content">
+                    <div class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; line-height: 1.6;">
+                        {{ essay.essay_text }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Submit Revised Essay
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('history') }}" class="btn btn-success btn-lg w-100">
+                    <i class="bi bi-clock-history me-2"></i>
+                    View History
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-info btn-lg w-100">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Progress Dashboard
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <button onclick="exportMLAnalysis()" class="btn btn-outline-secondary btn-lg w-100">
+                    <i class="bi bi-download me-2"></i>
+                    Export ML Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Feature Importance Chart
+const featureCtx = document.getElementById('featureImportanceChart').getContext('2d');
+const featureImportanceChart = new Chart(featureCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for feature in feedback.ml_analysis.feature_importance.keys() %}'{{ feature.replace('_', ' ').title() }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Feature Importance',
+            data: [{% for importance in feedback.ml_analysis.feature_importance.values() %}{{ importance }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 206, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)',
+                'rgba(255, 159, 64, 0.8)',
+                'rgba(255, 99, 132, 0.8)'
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 99, 132, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 0.3,
+                title: {
+                    display: true,
+                    text: 'Importance Score'
+                }
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'ML Model Feature Importance'
+            }
+        }
+    }
+});
+
+// Readability Metrics Chart
+const readabilityCtx = document.getElementById('readabilityChart').getContext('2d');
+const readabilityChart = new Chart(readabilityCtx, {
+    type: 'radar',
+    data: {
+        labels: ['Flesch Reading Ease', 'Flesch-Kincaid Grade', 'Gunning Fog', 'Coleman-Liau', 'Automated Readability'],
+        datasets: [{
+            label: 'Your Essay',
+            data: [
+                {{ feedback.features.readability.flesch_reading_ease }},
+                {{ feedback.features.readability.flesch_kincaid_grade }},
+                {{ feedback.features.readability.gunning_fog }},
+                {{ feedback.features.readability.coleman_liau }},
+                {{ feedback.features.readability.automated_readability }}
+            ],
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(54, 162, 235, 1)'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            r: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Readability Metrics Comparison'
+            }
+        }
+    }
+});
+
+function exportMLAnalysis() {
+    const analysisData = {
+        score: {{ result.score }},
+        confidence: {{ feedback.confidence }},
+        features: {{ feedback.features|tojson }},
+        ml_analysis: {{ feedback.ml_analysis|tojson }},
+        recommendations: {{ feedback.recommendations|tojson }},
+        essay_text: {{ essay.essay_text|tojson }}
+    };
+    
+    const dataStr = JSON.stringify(analysisData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ml_essay_analysis_{{ essay.id }}.json';
+    link.click();
+}
+</script>
+
+<style>
+.nlp-component-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.nlp-component-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.component-metrics {
+    margin-bottom: 1rem;
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.metric-item:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.metric-value {
+    font-weight: 700;
+    color: #007bff;
+}
+
+.terms-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.terms-badges .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.recommendation-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.recommendation-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.recommendation-list li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.recommendation-list li:last-child {
+    border-bottom: none;
+}
+
+.insights-card {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 1px solid #90caf9;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.insight-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+}
+
+.insight-value {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.feature-item {
+    margin-bottom: 0.5rem;
+}
+
+.feature-name {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.score-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.score-value {
+    font-weight: 700;
+    color: #28a745;
+}
+
+.confidence-meter {
+    padding: 1rem;
+}
+
+@media print {
+    .btn-group {
+        display: none;
+    }
+    
+    .navbar, footer {
+        display: none;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+    }
+}
+</style>
+{% endblock %}

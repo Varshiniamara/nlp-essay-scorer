@@ -1,0 +1,10 @@
+flask
+flask-sqlalchemy
+werkzeug
+scikit-learn
+pandas
+numpy
+nltk
+matplotlib
+textstat
+pickle-mixin

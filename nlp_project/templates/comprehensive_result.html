@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+
+{% block title %}Comprehensive NLP Analysis - Automated Essay Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-11 mx-auto">
+        <!-- Result Header -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-cpu me-2"></i>
+                Comprehensive NLP-Based Essay Analysis
+            </h2>
+            <p class="text-muted">Advanced linguistic analysis with semantic similarity and coherence metrics</p>
+        </div>
+
+        <!-- Overall Score -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-star me-2"></i>
+                    Overall Score: {{ "%.1f"|format(result.score) }}/12
+                </h4>
+            </div>
+            <div class="card-body text-center p-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="score-display">
+                            <h1 class="display-1 fw-bold {% if result.score >= 10 %}text-success{% elif result.score >= 8 %}text-primary{% elif result.score >= 6 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ "%.1f"|format(result.score) }}/12
+                            </h1>
+                            <div class="mb-3">
+                                {% if result.score >= 10 %}
+                                    <span class="badge bg-success fs-6">Excellent</span>
+                                {% elif result.score >= 8 %}
+                                    <span class="badge bg-primary fs-6">Very Good</span>
+                                {% elif result.score >= 6 %}
+                                    <span class="badge bg-warning fs-6">Good</span>
+                                {% elif result.score >= 4 %}
+                                    <span class="badge bg-info fs-6">Acceptable</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">Needs Improvement</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="score-progress">
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar {% if result.score >= 10 %}bg-success{% elif result.score >= 8 %}bg-primary{% elif result.score >= 6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ (result.score / 12) * 100 }}%">
+                                        {{ "%.1f"|format(result.score) }}/12
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">Score Range: 1 (Poor) to 12 (Excellent)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Linguistic Features Analysis -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-text-paragraph me-2"></i>
+                    Linguistic Features Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-primary">{{ result.feedback.linguistic_features.word_count }}</h5>
+                            <small class="text-muted">Word Count</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-success">{{ "%.3f"|format(result.feedback.linguistic_features.lexical_diversity) }}</h5>
+                            <small class="text-muted">Lexical Diversity</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-info">{{ "%.1f"|format(result.feedback.linguistic_features.flesch_reading_ease) }}</h5>
+                            <small class="text-muted">Flesch Reading Ease</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-warning">{{ feedback.linguistic_features.unique_words }}</h5>
+                            <small class="text-muted">Unique Words</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-secondary">{{ "%.1f"|format(feedback.linguistic_features.avg_word_length) }}</h5>
+                            <small class="text-muted">Avg Word Length</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-dark">{{ feedback.linguistic_features.named_entities|length }}</h5>
+                            <small class="text-muted">Named Entities</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Advanced Metrics -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">Syntactic Features</h6>
+                        <div class="row text-center">
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Nouns</small>
+                                <h6 class="text-primary">{{ feedback.linguistic_features.noun_count }}</h6>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Verbs</small>
+                                <h6 class="text-success">{{ feedback.linguistic_features.verb_count }}</h6>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Adjectives</small>
+                                <h6 class="text-info">{{ feedback.linguistic_features.adjective_count }}</h6>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">POS Diversity</small>
+                                <h6 class="text-warning">{{ feedback.linguistic_features.pos_diversity }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">Sentiment Analysis</h6>
+                        <div class="row text-center">
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Positive</small>
+                                <h6 class="text-success">{{ "%.3f"|format(feedback.linguistic_features.sentiment_positive) }}</h6>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Negative</small>
+                                <h6 class="text-danger">{{ "%.3f"|format(feedback.linguistic_features.sentiment_negative) }}</h6>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Neutral</small>
+                                <h6 class="text-secondary">{{ "%.3f"|format(feedback.linguistic_features.sentiment_neutral) }}</h6>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Compound</small>
+                                <h6 class="text-primary">{{ "%.3f"|format(feedback.linguistic_features.sentiment_compound) }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vector Space Analysis -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    Vector Space & Semantic Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-primary">{{ feedback.vector_analysis.vocabulary_size }}</h5>
+                            <small class="text-muted">Vocabulary Size</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-success">{{ "%.3f"|format(feedback.vector_analysis.avg_semantic_similarity) }}</h5>
+                            <small class="text-muted">Avg Semantic Similarity</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-info">{{ feedback.vector_analysis.semantic_similarities|length }}</h5>
+                            <small class="text-muted">Reference Essays Compared</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-warning">{{ feedback.vector_analysis.dominant_topic }}</h5>
+                            <small class="text-muted">Dominant Topic</small>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if feedback.vector_analysis.semantic_similarities %}
+                <div class="mt-4">
+                    <h6 class="text-primary mb-3">Semantic Similarity Distribution</h6>
+                    <div class="progress" style="height: 25px;">
+                        {% for similarity in feedback.vector_analysis.semantic_similarities %}
+                            <div class="progress-bar bg-info" style="width: {{ similarity * 100 }}%">
+                                {{ "%.1f"|format(similarity * 100) }}%
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Coherence Analysis -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-link-45deg me-2"></i>
+                    Coherence & Structure Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-primary">{{ feedback.coherence_metrics.cohesion_markers }}</h5>
+                            <small class="text-muted">Cohesion Markers</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-success">{{ "%.3f"|format(feedback.coherence_metrics.cohesion_density) }}</h5>
+                            <small class="text-muted">Cohesion Density</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-info">{{ feedback.coherence_metrics.argument_structure_score }}</h5>
+                            <small class="text-muted">Argument Structure</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-warning">{{ feedback.coherence_metrics.paragraph_count }}</h5>
+                            <small class="text-muted">Paragraph Count</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-secondary">{{ "%.1f"|format(feedback.coherence_metrics.avg_paragraph_length) }}</h5>
+                            <small class="text-muted">Avg Paragraph Length</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-dark">{{ feedback.coherence_metrics.dominant_pronoun }}</h5>
+                            <small class="text-muted">Dominant Pronoun</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grammar Accuracy Analysis -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Grammar Accuracy Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-success">{{ "%.1f"|format(feedback.grammar_analysis.grammar_accuracy * 100) }}%</h5>
+                            <small class="text-muted">Grammar Accuracy</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-warning">{{ feedback.grammar_analysis.total_errors }}</h5>
+                            <small class="text-muted">Total Errors</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-danger">{{ "%.3f"|format(feedback.grammar_analysis.error_density) }}</h5>
+                            <small class="text-muted">Error Density</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="metric-box">
+                            <h5 class="text-info">{{ feedback.grammar_analysis.error_types|length }}</h5>
+                            <small class="text-muted">Error Types</small>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if feedback.grammar_analysis.errors_found %}
+                <div class="mt-4">
+                    <h6 class="text-danger mb-3">Grammar Errors Found ({{ feedback.grammar_analysis.errors_found|length }})</h6>
+                    <div class="error-list">
+                        {% for error in feedback.grammar_analysis.errors_found[:5] %}
+                            <div class="error-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <span class="badge bg-danger">{{ error.error }}</span>
+                                        <small class="text-muted d-block mt-1">Position: {{ error.position }}</small>
+                                        <div class="error-context mt-2">
+                                            <code>{{ error.context }}</code>
+                                        </div>
+                                    </div>
+                                    <div class="ms-3">
+                                        <small class="text-primary">{{ error.fix }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Comprehensive Feedback -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    Comprehensive Improvement Feedback
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if feedback.detailed_feedback.strengths %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-success mb-3">Strengths</h6>
+                        <div class="suggestion-list">
+                            {% for strength in feedback.detailed_feedback.strengths %}
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    <span>{{ strength }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if feedback.detailed_feedback.weaknesses %}
+                    <div class="col-md-6">
+                        <h6 class="text-danger mb-3">Areas for Improvement</h6>
+                        <div class="suggestion-list">
+                            {% for weakness in feedback.detailed_feedback.weaknesses %}
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                    <span>{{ weakness }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="suggestion-card">
+                            <h6 class="text-primary mb-2">Grammar</h6>
+                            <ul class="suggestion-items">
+                                {% for suggestion in feedback.detailed_feedback.suggestions.grammar %}
+                                    <li class="mb-1">{{ suggestion }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="suggestion-card">
+                            <h6 class="text-success mb-2">Vocabulary</h6>
+                            <ul class="suggestion-items">
+                                {% for suggestion in feedback.detailed_feedback.suggestions.vocabulary %}
+                                    <li class="mb-1">{{ suggestion }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="suggestion-card">
+                            <h6 class="text-info mb-2">Structure</h6>
+                            <ul class="suggestion-items">
+                                {% for suggestion in feedback.detailed_feedback.suggestions.structure %}
+                                    <li class="mb-1">{{ suggestion }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="suggestion-card">
+                            <h6 class="text-warning mb-2">Coherence</h6>
+                            <ul class="suggestion-items">
+                                {% for suggestion in feedback.detailed_feedback.suggestions.coherence %}
+                                    <li class="mb-1">{{ suggestion }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="suggestion-card">
+                            <h6 class="text-secondary mb-2">Content</h6>
+                            <ul class="suggestion-items">
+                                {% for suggestion in feedback.detailed_feedback.suggestions.content %}
+                                    <li class="mb-1">{{ suggestion }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Essay Text with Analysis -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Your Essay Text
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="essay-content">
+                    <div class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; line-height: 1.6;">
+                        {{ essay.essay_text }}
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-outline-primary" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i>
+                        Print Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Submit Revised Essay
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('history') }}" class="btn btn-success btn-lg w-100">
+                    <i class="bi bi-clock-history me-2"></i>
+                    View History
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-info btn-lg w-100">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Progress Dashboard
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <button onclick="exportAnalysis()" class="btn btn-outline-secondary btn-lg w-100">
+                    <i class="bi bi-download me-2"></i>
+                    Export Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportAnalysis() {
+    const analysisData = {
+        overall_score: {{ result.score }},
+        linguistic_features: {{ feedback.linguistic_features|tojson }},
+        vector_analysis: {{ feedback.vector_analysis|tojson }},
+        coherence_metrics: {{ feedback.coherence_metrics|tojson }},
+        grammar_analysis: {{ feedback.grammar_analysis|tojson }},
+        detailed_feedback: {{ feedback.detailed_feedback|tojson }},
+        essay_text: {{ essay.essay_text|tojson }}
+    };
+    
+    const dataStr = JSON.stringify(analysisData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'essay_analysis_{{ essay.id }}.json';
+    link.click();
+}
+</script>
+
+<style>
+.metric-box {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.metric-box:hover {
+    transform: translateY(-2px);
+}
+
+.metric-box h5 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.error-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.error-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.error-context {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: monospace;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.suggestion-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.suggestion-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.suggestion-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.suggestion-items li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.suggestion-items li:last-child {
+    border-bottom: none;
+}
+
+@media print {
+    .btn-group {
+        display: none;
+    }
+    
+    .navbar, footer {
+        display: none;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+    }
+}
+</style>
+{% endblock %}

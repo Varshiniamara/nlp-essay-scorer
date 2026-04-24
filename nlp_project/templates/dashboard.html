@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Automated Essay Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">
+                <i class="bi bi-graph-up me-2"></i>
+                Your Dashboard
+            </h2>
+            <p class="text-muted">Track your writing progress and performance analytics</p>
+        </div>
+
+        {% if no_data %}
+            <!-- Empty State -->
+            <div class="card shadow-lg">
+                <div class="card-body text-center py-5">
+                    <div class="text-muted mb-4">
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Data Available</h4>
+                    <p class="text-muted mb-4">
+                        You haven't submitted any essays yet. Start by submitting your first essay to see your dashboard analytics here.
+                    </p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Submit Your First Essay
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <!-- Statistics Overview -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-primary">{{ data.essay_count }}</h5>
+                            <p class="small text-muted mb-0">Total Essays</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-success">{{ "%.1f"|format(data.avg_score) }}</h5>
+                            <p class="small text-muted mb-0">Average Score</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-info">{{ data.total_words }}</h5>
+                            <p class="small text-muted mb-0">Total Words</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="text-warning">{{ "%.1f"|format(data.total_words / data.essay_count) if data.essay_count > 0 else 0 }}</h5>
+                            <p class="small text-muted mb-0">Avg Words/Essay</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Score Progress
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="scoreChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-file-text me-2"></i>
+                                Word Count Analysis
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="wordCountChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Grammar Errors Trend
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="grammarChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-pie-chart me-2"></i>
+                                Score Distribution
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="scoreDistribution" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Insights -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        Performance Insights
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success mb-3">Strengths</h6>
+                            <div id="strengthsList">
+                                <!-- Strengths will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning mb-3">Areas for Improvement</h6>
+                            <div id="improvementsList">
+                                <!-- Improvements will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Submit New Essay
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{{ url_for('history') }}" class="btn btn-success btn-lg w-100">
+                        <i class="bi bi-clock-history me-2"></i>
+                        View History
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button onclick="window.print()" class="btn btn-outline-secondary btn-lg w-100">
+                        <i class="bi bi-printer me-2"></i>
+                        Print Dashboard
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if not no_data %}
+<script>
+// Data from Flask
+const scores = {{ data.scores|tojson }};
+const wordCounts = {{ data.word_counts|tojson }};
+const grammarErrors = {{ data.grammar_errors|tojson }};
+
+// Generate labels
+const labels = scores.map((_, index) => `Essay ${index + 1}`);
+
+// Score Progress Chart
+const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+new Chart(scoreCtx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Essay Scores',
+            data: scores,
+            borderColor: 'rgb(102, 126, 234)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.1,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 12,
+                title: {
+                    display: true,
+                    text: 'Score'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Word Count Chart
+const wordCtx = document.getElementById('wordCountChart').getContext('2d');
+new Chart(wordCtx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Word Count',
+            data: wordCounts,
+            backgroundColor: 'rgba(40, 167, 69, 0.6)',
+            borderColor: 'rgb(40, 167, 69)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Word Count'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Grammar Errors Chart
+const grammarCtx = document.getElementById('grammarChart').getContext('2d');
+new Chart(grammarCtx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Grammar Errors',
+            data: grammarErrors,
+            borderColor: 'rgb(255, 193, 7)',
+            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+            tension: 0.1,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Grammar Errors'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Score Distribution
+const distributionCtx = document.getElementById('scoreDistribution').getContext('2d');
+const scoreRanges = {
+    '1-3': 0,
+    '4-6': 0,
+    '7-9': 0,
+    '10-12': 0
+};
+
+scores.forEach(score => {
+    if (score <= 3) scoreRanges['1-3']++;
+    else if (score <= 6) scoreRanges['4-6']++;
+    else if (score <= 9) scoreRanges['7-9']++;
+    else scoreRanges['10-12']++;
+});
+
+new Chart(distributionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(scoreRanges),
+        datasets: [{
+            data: Object.values(scoreRanges),
+            backgroundColor: [
+                'rgba(220, 53, 69, 0.6)',
+                'rgba(255, 193, 7, 0.6)',
+                'rgba(13, 202, 240, 0.6)',
+                'rgba(40, 167, 69, 0.6)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Generate insights
+function generateInsights() {
+    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const avgWordCount = wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length;
+    const avgGrammarErrors = grammarErrors.reduce((a, b) => a + b, 0) / grammarErrors.length;
+    
+    const strengthsList = document.getElementById('strengthsList');
+    const improvementsList = document.getElementById('improvementsList');
+    
+    let strengths = [];
+    let improvements = [];
+    
+    if (avgScore >= 8) {
+        strengths.push('Strong overall performance with high average scores');
+    }
+    if (avgWordCount >= 200) {
+        strengths.push('Good essay length and content development');
+    }
+    if (avgGrammarErrors <= 3) {
+        strengths.push('Excellent grammar with minimal errors');
+    }
+    
+    if (avgScore < 6) {
+        improvements.push('Focus on improving overall essay quality');
+    }
+    if (avgWordCount < 150) {
+        improvements.push('Write longer essays with more content');
+    }
+    if (avgGrammarErrors > 5) {
+        improvements.push('Review and reduce grammar errors');
+    }
+    
+    strengthsList.innerHTML = strengths.map(s => 
+        `<div class="d-flex align-items-center mb-2">
+            <i class="bi bi-check-circle text-success me-2"></i>
+            <small>${s}</small>
+        </div>`
+    ).join('');
+    
+    improvementsList.innerHTML = improvements.map(i => 
+        `<div class="d-flex align-items-center mb-2">
+            <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+            <small>${i}</small>
+        </div>`
+    ).join('');
+}
+
+generateInsights();
+</script>
+{% endif %}
+
+<style>
+@media print {
+    .btn-group {
+        display: none;
+    }
+    
+    .navbar, footer {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
