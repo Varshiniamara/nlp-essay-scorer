@@ -1,13 +1,11 @@
 import os
 import sys
 
-# Add root directory to sys.path
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(root_dir)
+# Ensure both the root and nlp_project dirs are on sys.path
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, root)
+sys.path.insert(0, os.path.join(root, 'nlp_project'))
 
-# Now import the app from nlp_project/app.py
 from nlp_project.app import app
 
-# Vercel needs the app as 'app' or 'handler'
-# If app is already 'app', we are good.
 handler = app

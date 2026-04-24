@@ -26,11 +26,22 @@ except LookupError:
     nltk.download('wordnet')
 
 class EssayPredictor:
-    def __init__(self, model_path='model.pkl', vectorizer_path='vectorizer.pkl'):
+    def __init__(self, model_path=None, vectorizer_path=None):
         self.model = None
         self.vectorizer = None
         self.lemmatizer = WordNetLemmatizer()
         self.stop_words = set(stopwords.words('english'))
+        
+        # Resolve model paths relative to this file
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        if model_path is None:
+            model_path = os.path.join(base_dir, 'nlp_project', 'model.pkl')
+            if not os.path.exists(model_path):
+                model_path = os.path.join(base_dir, 'model.pkl')
+        if vectorizer_path is None:
+            vectorizer_path = os.path.join(base_dir, 'nlp_project', 'vectorizer.pkl')
+            if not os.path.exists(vectorizer_path):
+                vectorizer_path = os.path.join(base_dir, 'vectorizer.pkl')
         
         # Load trained model and vectorizer
         self.load_model(model_path, vectorizer_path)
