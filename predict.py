@@ -13,17 +13,17 @@ import os
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
-    nltk.download('punkt')
+    nltk.download('punkt', download_dir='/tmp/nltk_data')
 
 try:
     nltk.data.find('corpora/stopwords')
 except LookupError:
-    nltk.download('stopwords')
+    nltk.download('stopwords', download_dir='/tmp/nltk_data')
 
 try:
     nltk.data.find('corpora/wordnet')
 except LookupError:
-    nltk.download('wordnet')
+    nltk.download('wordnet', download_dir='/tmp/nltk_data')
 
 class EssayPredictor:
     def __init__(self, model_path=None, vectorizer_path=None):

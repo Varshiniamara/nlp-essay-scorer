@@ -59,37 +59,37 @@ class AdvancedNLPEssayAnalyzer:
         try:
             nltk.data.find('tokenizers/punkt')
         except LookupError:
-            nltk.download('punkt')
+            nltk.download('punkt', download_dir='/tmp/nltk_data')
         
         try:
             nltk.data.find('corpora/stopwords')
         except LookupError:
-            nltk.download('stopwords')
+            nltk.download('stopwords', download_dir='/tmp/nltk_data')
         
         try:
             nltk.data.find('corpora/wordnet')
         except LookupError:
-            nltk.download('wordnet')
+            nltk.download('wordnet', download_dir='/tmp/nltk_data')
         
         try:
             nltk.data.find('taggers/averaged_perceptron_tagger')
         except LookupError:
-            nltk.download('averaged_perceptron_tagger')
+            nltk.download('averaged_perceptron_tagger', download_dir='/tmp/nltk_data')
         
         try:
             nltk.data.find('corpora/vader_lexicon')
         except LookupError:
-            nltk.download('vader_lexicon')
+            nltk.download('vader_lexicon', download_dir='/tmp/nltk_data')
         
         try:
             nltk.data.find('chunkers/maxent_ne_chunker')
         except LookupError:
-            nltk.download('maxent_ne_chunker')
+            nltk.download('maxent_ne_chunker', download_dir='/tmp/nltk_data')
         
         try:
             nltk.data.find('corpora/words')
         except LookupError:
-            nltk.download('words')
+            nltk.download('words', download_dir='/tmp/nltk_data')
     
     def advanced_preprocessing(self, text):
         """Advanced text preprocessing for NLP analysis"""
