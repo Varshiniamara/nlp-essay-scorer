@@ -13,7 +13,10 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 import textstat
 import re
 from collections import Counter
-import spacy
+try:
+    import spacy
+except ImportError:
+    spacy = None
 
 class AdvancedNLPEssayAnalyzer:
     """
